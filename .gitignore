@@ -1,0 +1,6 @@
+# Artifact directories
+lib/**
+obj/**
+data/**
+# Code editor files
+.vscode
