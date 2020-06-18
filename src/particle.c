@@ -73,10 +73,6 @@ double _square(double x) {
 }
 
 struct Particle **create_index(struct Particle *particles, struct Mesh *mesh, int p_size, uint64_t *c_size) {
-  // This will get very large if we increase NX, NY, NZ
-  // Currently, for instance, the max z_curve value is ~24x larger than NX*NY*NZ
-  // Will eventually need to switch to precomputing and renumbering z_indices
-  // This will also cut down computation from repeated interleaving and deinterleaving of bits
   *c_size = NX_RHO * NY_RHO * NZ_RHO;
   // Allocate index memory
   struct Particle **z_curve_idx = malloc(sizeof(struct Particle *) * (*c_size + 1));
