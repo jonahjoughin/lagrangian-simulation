@@ -10,10 +10,9 @@
 void create_particle(struct Particle *p, struct Mesh *mesh, uint64_t id, double x, double y, double z) {
     // Assign basic properties
     p->id = id;
-    p->x = x;
-    p->y = y;
-    p->z = z;
-    p->z_curve_idx = _xyz_to_z_curve(1, 1, 0);
+    p->x = x, p->y = y, p->z = z;
+
+    p->x_idx = 1,  p->y_idx = 1, p->z_idx = 0;
     // Assign z curve index
     _update_particle_index(p, mesh);
 }
@@ -72,13 +71,17 @@ int _cross_product_sign(const double* vec1, const double* vec2) {
     }
 }
 
+double _square(double x) {
+    return x * x;
+}
+
 struct Particle ** create_index(struct Particle *particles, struct Mesh *mesh, int p_size, uint64_t *c_size) {
 
     // This will get very large if we increase NX, NY, NZ
     // Currently, for instance, the max z_curve value is ~24x larger than NX*NY*NZ
     // Will eventually need to switch to precomputing and renumbering z_indices
     // This will also cut down computation from repeated interleaving and deinterleaving of bits
-    *c_size = _xyz_to_z_curve(NX_RHO-1, NY_RHO-1, NZ_RHO-1);
+    *c_size = NX_RHO * NY_RHO * NZ_RHO;
     // Allocate index memory
     struct Particle **z_curve_idx = malloc(sizeof(struct Particle *) * (*c_size + 1));
     // Set end pointers of index
@@ -139,21 +142,17 @@ void _sort_index(struct Particle **z_curve_idx, int c_size) {
 
 void _step_particle(struct Particle *p, struct Mesh *mesh, double dt) {
 
-    uint64_t x, y, z;
+    int x = p->x_idx, y = p->y_idx, z = p->z_idx;
 
     double dx_dxi, dx_deta, dy_dxi, dy_deta, det, dxi_dt, deta_dt, dx_dt, dy_dt;
     double U0, U1, V0, V1;
     double v1[2], v2[2], v3[2], v4[2], coord[2], normalized_coord[2];
 
-    // Get grid index
-    // May be easier to just store this
-    _z_curve_to_xyz(p->z_curve_idx, &x, &y, &z);
-
-    // Calculate fluxes
-    U0 = mesh->u[y][x-1] * pow(pow(mesh->y_psi[y-1][x-1] - mesh->y_psi[y][x-1], 2) + pow(mesh->x_psi[y-1][x-1] - mesh->x_psi[y][x-1], 2), 0.5);
-    U1 = mesh->u[y][x] * pow(pow(mesh->y_psi[y-1][x] - mesh->y_psi[y][x], 2) + pow(mesh->x_psi[y-1][x] - mesh->x_psi[y][x], 2), 0.5);
-    V0 = mesh->v[y-1][x] * pow(pow(mesh->y_psi[y-1][x-1] - mesh->y_psi[y-1][x], 2) + pow(mesh->x_psi[y-1][x-1] - mesh->x_psi[y-1][x], 2), 0.5);
-    V1 = mesh->v[y][x] * pow(pow(mesh->y_psi[y][x-1] - mesh->y_psi[y][x], 2) + pow(mesh->x_psi[y][x-1] - mesh->x_psi[y][x], 2), 0.5);
+    // // Calculate fluxes
+    U0 = mesh->u[y][x-1] * sqrt(_square(mesh->y_psi[y-1][x-1] - mesh->y_psi[y][x-1]) + _square(mesh->x_psi[y-1][x-1] - mesh->x_psi[y][x-1]));
+    U1 = mesh->u[y][x] * sqrt(_square(mesh->y_psi[y-1][x] - mesh->y_psi[y][x]) + _square(mesh->x_psi[y-1][x] - mesh->x_psi[y][x]));
+    V0 = mesh->v[y-1][x] * sqrt(_square(mesh->y_psi[y-1][x-1] - mesh->y_psi[y-1][x]) + _square(mesh->x_psi[y-1][x-1] - mesh->x_psi[y-1][x]));
+    V1 = mesh->v[y][x] * sqrt(_square(mesh->y_psi[y][x-1] - mesh->y_psi[y][x]) + _square(mesh->x_psi[y][x-1] - mesh->x_psi[y][x]));
 
     // Set up vertex vectors
     v1[0] = mesh->y_psi[y-1][x-1];
@@ -193,7 +192,7 @@ int _update_particle_index(struct Particle *particle, const struct Mesh *mesh) {
     double vec1[2], vec2[2];
     uint64_t idx[3];
     // Set initial approximation to last known index
-    _z_curve_to_xyz(particle->z_curve_idx, idx+1, idx, idx+2);
+    idx[0] = particle->y_idx, idx[1] = particle->x_idx, idx[2] = particle->z_idx;
     // Locate new index
     // This should take very few iterations (probably one), unless particles are crossing multiple grid cells in a single step
     while (1) {
@@ -240,7 +239,8 @@ int _update_particle_index(struct Particle *particle, const struct Mesh *mesh) {
         }
 
         // Copy correct index and return
-        particle->z_curve_idx = _xyz_to_z_curve(idx[1], idx[0], idx[2]);
+        particle->x_idx = idx[1], particle->y_idx = idx[0], particle->z_idx = idx[2];
+        particle->z_curve_idx = mesh->z_curve_idx_rho[idx[2]][idx[0]][idx[1]];
         return 0;
     }
 }

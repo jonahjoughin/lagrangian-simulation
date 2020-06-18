@@ -10,6 +10,7 @@
 #define GRD_PATH "/Users/jonah/Documents/work/pptp/netcdf/data/croco_grd.nc"
 #define AVG_PATH "/Users/jonah/Documents/work/pptp/netcdf/data/croco_avg.nc"
 
+
 double rand_in_range(double min, double max) {
     return ((double)rand() / (double)(RAND_MAX) * (max - min)) + min;
 }
@@ -17,7 +18,7 @@ double rand_in_range(double min, double max) {
 int main() {
 
     int grd_ncid, avg_ncid;
-    uint64_t p_size = 10000, c_size;
+    uint64_t p_size = 100000, c_size;
     struct Mesh mesh;
     struct Particle *particles = malloc(sizeof(struct Particle) * p_size);
 
@@ -38,8 +39,7 @@ int main() {
     struct Particle **z_curve_idx = create_index(particles, &mesh, p_size, &c_size);
 
     // One month with dt=1 hour
-    for (int i = 0; i < 744; i++) {
-        printf("%d\n", i);
+    for (int i = 0; i < 8760; i++) {
         step_index(z_curve_idx, c_size, &mesh, 3600.0);
     }
 }

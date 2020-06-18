@@ -10,10 +10,10 @@ CFLAGS=-I$(IDIR) -I$(NDIR)/include
 
 LIBS=-lnetcdf -lm
 
-_DEPS = main.h mesh.h interpolate.h particle.h
+_DEPS = main.h mesh.h interpolate.h particle.h sort.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o mesh.o interpolate.o particle.o
+_OBJ = main.o mesh.o interpolate.o particle.o sort.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
