@@ -2,5 +2,8 @@
 lib/**
 obj/**
 data/**
+exec/**
 # Code editor files
 .vscode
+# OS Files
+.DS_Store
