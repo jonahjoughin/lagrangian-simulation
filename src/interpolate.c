@@ -42,7 +42,6 @@ int inverse_bilinear(const double* coord, const double* vec1, const double* vec2
   c = V[1] * W[0] - V[0] * W[1] + coord[0] * W[1] - coord[1] * V[1];
 
   // Solve for xi, eta in [0,1]x[0,1]
-
   if (_soft_eq(a, 0, 1e-10)) {
     // Linear case
     xi = -c / b;
@@ -51,29 +50,11 @@ int inverse_bilinear(const double* coord, const double* vec1, const double* vec2
     det = sqrt(b * b - 4 * a * c);
     xi = (-b + det) / (2 * a);
   }
-
   eta = (coord[0] - V[0] - V[2] * xi) / (V[1] + V[3] * xi);
 
-  // Assign normalized coordinates (eta - y, xi - x)
+  // Assign normalized coordinates (eta <-> y, xi <-> x)
   normalized_coord[0] = eta;
   normalized_coord[1] = xi;
-
-  return 0;
-}
-
-// Inverse bilinear interpolation
-// Given xyz coordinates and the vertices of a cell, returns the normalized coordinates of xyz in [0,1]x[0,1]x[0,1]
-// It is assumed that xy coordinates remain constant in the z direction
-// Not yet completed
-int inverse_trilinear(const double* coord, const double* v1, const double* v2, const double* v3, const double* v4, const double* v5, const double* v6, const double* v7, const double* v8, double* normalized_coord) {
-  double z0, z1;
-
-  inverse_bilinear(coord, v1, v2, v3, v4, normalized_coord);
-
-  z0 = bilinear(normalized_coord, v1[2], v2[2], v3[2], v4[2]);
-  z1 = bilinear(normalized_coord, v5[2], v6[2], v7[2], v8[2]);
-
-  normalized_coord[2] = (coord[2] - z0) / (z1 - z0);
 
   return 0;
 }

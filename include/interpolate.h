@@ -1,2 +1,8 @@
+#ifndef INTERPOLATE_H_INCLUDED
+#define INTERPOLATE_H_INCLUDED
+
+double bilinear(const double* normalized_coord, double val1, const double val2, double val3, double val4);
+
 int inverse_bilinear(const double* coord, const double* vec1, const double* vec2, const double* vec3, const double* vec4, double* normalized_coord);
-int inverseBilerp(double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double x, double y, double* sout, double* tout, double* s2out, double* t2out);
+
+#endif

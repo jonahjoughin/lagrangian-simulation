@@ -1,5 +1,5 @@
-int displayVars(const char* path);
-int varShape(int ncid, int varid);
+#ifndef MAIN_H_INCLUDED
+#define MAIN_H_INCLUDED
 
 #define CHECK_NC_NOERR(x)                                                                          \
   do {                                                                                             \
@@ -10,3 +10,5 @@ int varShape(int ncid, int varid);
       return retval;                                                                               \
     }                                                                                              \
   } while (0)
+
+#endif
